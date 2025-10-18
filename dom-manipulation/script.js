@@ -80,6 +80,23 @@ async function fetchQuotesFromServer() {
   }
 }
 
+function postQuoteToServer(quote) {
+  fetch("https://jsonplaceholder.typicode.com/posts", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(quote)
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log("Quote posted to server:", data);
+  })
+  .catch(error => {
+    console.error("Failed to post quote:", error);
+  });
+}
+
 // Add a new quote
 function addQuote() {
   const textInput = document.getElementById("newQuoteText");
@@ -91,11 +108,13 @@ function addQuote() {
   };
 
   quotes.push(newQuote);
+  postQuoteToServer(newQuote);
   saveQuotes();
   populateCategories(); // Refresh dropdown
   textInput.value = "";
   categoryInput.value = "";
   showRandomQuote();
+  
 }
 
 // Create the form dynamically
