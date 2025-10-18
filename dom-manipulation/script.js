@@ -64,7 +64,7 @@ function resolveConflicts(serverQuotes) {
   }
 }
 
-async function fetchQuotesFromServer() {
+async function syncQuotes() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5");
     const serverQuotes = await response.json();
@@ -222,4 +222,5 @@ document.body.insertBefore(categoryFilter, document.getElementById("quoteDisplay
 populateCategories();
 showRandomQuote();
 
-setInterval(fetchQuotesFromServer, 30000);
+setInterval(syncQuotes, 30000);
+
