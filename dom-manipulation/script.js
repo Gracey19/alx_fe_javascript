@@ -9,14 +9,25 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Show a random quote
+// Show a random quote (filtered if needed)
 function showRandomQuote() {
-  const randomIndex = Math.floor(Math.random() * quotes.length);
-  const quote = quotes[randomIndex];
+  const selectedCategory = document.getElementById("categoryFilter")?.value || "all";
+  let filtered = quotes;
+
+  if (selectedCategory !== "all") {
+    filtered = quotes.filter(q => q.category === selectedCategory);
+  }
+
   const quoteDisplay = document.getElementById("quoteDisplay");
+  if (filtered.length === 0) {
+    quoteDisplay.innerHTML = "<p>No quotes found for this category.</p>";
+    return;
+  }
+
+  const randomIndex = Math.floor(Math.random() * filtered.length);
+  const quote = filtered[randomIndex];
   quoteDisplay.innerHTML = `<p>"${quote.text}"</p><small>— ${quote.category}</small>`;
 
-  // Save last viewed quote to sessionStorage
   sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
@@ -32,6 +43,7 @@ function addQuote() {
 
   quotes.push(newQuote);
   saveQuotes();
+  populateCategories(); // Refresh dropdown
   textInput.value = "";
   categoryInput.value = "";
   showRandomQuote();
@@ -81,9 +93,36 @@ function importFromJsonFile(event) {
     const importedQuotes = JSON.parse(event.target.result);
     quotes.push(...importedQuotes);
     saveQuotes();
+    populateCategories();
     alert('Quotes imported successfully!');
   };
   fileReader.readAsText(event.target.files[0]);
+}
+
+// Populate category dropdown
+function populateCategories() {
+  const categoryFilter = document.getElementById("categoryFilter");
+  const categories = [...new Set(quotes.map(q => q.category))];
+
+  categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categoryFilter.appendChild(option);
+  });
+
+  const savedFilter = localStorage.getItem("selectedCategory");
+  if (savedFilter) {
+    categoryFilter.value = savedFilter;
+  }
+}
+
+// Filter quotes by category
+function filterQuotes() {
+  const selectedCategory = document.getElementById("categoryFilter").value;
+  localStorage.setItem("selectedCategory", selectedCategory);
+  showRandomQuote();
 }
 
 // Event listener for the button
@@ -105,4 +144,13 @@ importInput.id = "importFile";
 importInput.accept = ".json";
 importInput.onchange = importFromJsonFile;
 document.body.appendChild(importInput);
+
+// Create category filter dropdown
+const categoryFilter = document.createElement("select");
+categoryFilter.id = "categoryFilter";
+categoryFilter.onchange = filterQuotes;
+document.body.insertBefore(categoryFilter, document.getElementById("quoteDisplay"));
+
+populateCategories();
+showRandomQuote();
 
