@@ -31,6 +31,55 @@ function showRandomQuote() {
   sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
+function showNotification(message) {
+  const note = document.createElement("div");
+  note.innerText = message;
+  note.style.background = "#ffeeba";
+  note.style.padding = "10px";
+  note.style.margin = "10px 0";
+  note.style.border = "1px solid #f0ad4e";
+  document.body.insertBefore(note, document.getElementById("quoteDisplay"));
+
+  setTimeout(() => note.remove(), 5000);
+}
+
+function resolveConflicts(serverQuotes) {
+  let updated = false;
+
+  serverQuotes.forEach(serverQuote => {
+    const exists = quotes.some(localQuote =>
+      localQuote.text === serverQuote.text && localQuote.category === serverQuote.category
+    );
+
+    if (!exists) {
+      quotes.push(serverQuote);
+      updated = true;
+    }
+  });
+
+  if (updated) {
+    saveQuotes();
+    populateCategories();
+    showNotification("New quotes synced from server.");
+  }
+}
+
+async function fetchServerQuotes() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=5");
+    const serverQuotes = await response.json();
+
+    const formattedQuotes = serverQuotes.map(post => ({
+      text: post.title,
+      category: "Server"
+    }));
+
+    resolveConflicts(formattedQuotes);
+  } catch (error) {
+    console.error("Failed to fetch server quotes:", error);
+  }
+}
+
 // Add a new quote
 function addQuote() {
   const textInput = document.getElementById("newQuoteText");
@@ -154,3 +203,4 @@ document.body.insertBefore(categoryFilter, document.getElementById("quoteDisplay
 populateCategories();
 showRandomQuote();
 
+setInterval(fetchServerQuotes, 30000); // Sync every 30 seconds
