@@ -1,8 +1,13 @@
-// Initial quotes array
-let quotes = [
+// Load quotes from localStorage if available
+let quotes = JSON.parse(localStorage.getItem("quotes")) || [
   { text: "Wisdom is wealth.", category: "Proverbs" },
   { text: "Courage is grace under pressure.", category: "Motivation" },
 ];
+
+// Save quotes to localStorage
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
 
 // Show a random quote
 function showRandomQuote() {
@@ -10,6 +15,9 @@ function showRandomQuote() {
   const quote = quotes[randomIndex];
   const quoteDisplay = document.getElementById("quoteDisplay");
   quoteDisplay.innerHTML = `<p>"${quote.text}"</p><small>— ${quote.category}</small>`;
+
+  // Save last viewed quote to sessionStorage
+  sessionStorage.setItem("lastQuote", JSON.stringify(quote));
 }
 
 // Add a new quote
@@ -23,11 +31,13 @@ function addQuote() {
   };
 
   quotes.push(newQuote);
+  saveQuotes();
   textInput.value = "";
   categoryInput.value = "";
   showRandomQuote();
 }
 
+// Create the form dynamically
 function createAddQuoteForm() {
   const formContainer = document.createElement("div");
 
@@ -52,7 +62,47 @@ function createAddQuoteForm() {
   document.body.appendChild(formContainer);
 }
 
+// Export quotes to JSON file
+function exportToJsonFile() {
+  const dataStr = JSON.stringify(quotes, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = "quotes.json";
+  downloadLink.click();
+}
+
+// Import quotes from JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(event) {
+    const importedQuotes = JSON.parse(event.target.result);
+    quotes.push(...importedQuotes);
+    saveQuotes();
+    alert('Quotes imported successfully!');
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
 // Event listener for the button
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 
+// Create form and import/export controls
 createAddQuoteForm();
+
+// Create export button
+const exportButton = document.createElement("button");
+exportButton.innerText = "Export Quotes";
+exportButton.onclick = exportToJsonFile;
+document.body.appendChild(exportButton);
+
+// Create import input
+const importInput = document.createElement("input");
+importInput.type = "file";
+importInput.id = "importFile";
+importInput.accept = ".json";
+importInput.onchange = importFromJsonFile;
+document.body.appendChild(importInput);
+
