@@ -60,7 +60,7 @@ function resolveConflicts(serverQuotes) {
   if (updated) {
     saveQuotes();
     populateCategories();
-    showNotification("Quotes synced with serveer!");
+    showNotification("Quotes synced with server!");
   }
 }
 
