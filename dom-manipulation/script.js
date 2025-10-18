@@ -80,6 +80,10 @@ async function fetchQuotesFromServer() {
   }
 }
 
+function syncQuotes() {
+  fetchQuotesFromServer();
+}
+
 function postQuoteToServer(quote) {
   fetch("https://jsonplaceholder.typicode.com/posts", {
     method: "POST",
